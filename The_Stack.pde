@@ -35,7 +35,7 @@ private ParticleSystem particleSystem;
 private Tile oscillatingTile;
 private Tile topTile;
 
-private final int  MINIMUM_COMBO = 2;
+private final int  MINIMUM_COMBO = 10;
 private int score;
 private int highScore;
 private int combo;
@@ -251,7 +251,6 @@ private boolean placeTile() {
   } else {
     float deltaY = topTile.pos.y - oscillatingTile.pos.y;
     if (abs(deltaY) > ERROR_MARGIN) {
-      combo = 0;
       // Cut Tile
       tileBounds.y -= abs(deltaY);
       if (tileBounds.y < 0) {
