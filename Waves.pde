@@ -1,54 +1,57 @@
 class Waves {
-  ArrayList<Rect> waves = new ArrayList<Rect>();
-
+  ArrayList<Wave> waves = new ArrayList<Wave>();
   void init(PVector pos, PVector scale) {
-    waves.add(new Rect(pos, scale));
+    waves.add(new Wave(pos, scale, false));
+  }
+  
+  void init(PVector pos, PVector scale, boolean golden) {
+    waves.add(new Wave(pos, scale, golden));
   }
 
   void update() {
+    rectMode(CENTER);
     for (int i = waves.size() - 1; i >= 0; i--) {
-      Rect r = waves.get(i);
+      Wave r = waves.get(i);
       if (r.off) waves.remove(i);
       else r.update();
     }
   }
-
-  class Rect {
+  
+  class Wave {
     PVector desiredScale;
     float lifespan;
     PVector scale;
     PVector pos;
     boolean off;
+    int color_;
 
-    Rect(PVector pos, PVector scale) {
-      this.desiredScale = scale.copy().add(scale.copy().mult(0.3f));
+    Wave(PVector pos, PVector scale, boolean golden) {
+      this.desiredScale = scale.copy().add(scale.copy().mult(0.4f));
       this.scale = scale.copy();
-      this.pos = pos.copy();
+      this.pos = pos;
+      this.color_ = golden ? color(255, 200, 0) : color(255);
       lifespan = 255;
     }
 
     void display() {
       pushMatrix();
       {
-        translate(pos.x - (scale.x / 2), pos.y - (scale.y / 2), pos.z);
-        fill(255, 200, 0, lifespan);
-        beginShape(QUAD);
-        {
-          vertex(0, 0, 0);
-          vertex(scale.x, 0, 0);
-          vertex(scale.x, scale.y, 0);
-          vertex(0, scale.y, 0);
-        }
-        endShape();
+        translate(pos.x, pos.y, pos.z - tileScale.z/2);
+        fill(color_, lifespan);
+        rect(0, 0, scale.x, scale.y);
       }
       popMatrix();
     }
 
     void update() {
-      lifespan = lerp(lifespan, 0, 0.1f);
-      scale.lerp(desiredScale, 0.1f);
+      easeMotion();
       if (lifespan < 0.01f) off = true;
       display();
+    }
+    
+    void easeMotion(){
+      lifespan = lerp(lifespan, 0, 0.1f);
+      scale.lerp(desiredScale, 0.1f);
     }
   }
 }

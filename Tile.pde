@@ -11,8 +11,9 @@ class Tile {
   boolean dissolve;
   float alpha;
   float desiredAlpha;
-  private int color_;
-  private boolean off;
+  int color_;
+  int desiredColor;
+  boolean off;
 
   Tile(PVector pos, PVector scale, int color_) {
     this.desiredScale = scale.copy();
@@ -20,80 +21,61 @@ class Tile {
     this.scale = scale.copy();
     this.pos = pos.copy();
     this.setColor(color_);
+    this.color_ = color_;
+    this.desiredColor = color_;
 
-    aVel = PVector.random3D().mult(0.01f);
+    aVel = PVector.random3D().setMag(0.01f);
     rot = new PVector();
-    vel =  PVector.random3D().mult(0.08f);
     desiredAlpha = 255;
   }
 
   void update() {
     // Adjust position to the scale changes
-    PVector pScale = scale.copy();
-    scale.lerp(desiredScale, 0.2f);
+    final PVector pScale = scale.copy();
+    easeChanges();
     pos.add(PVector.sub(scale, pScale).mult(0.5f));
-    if (alpha < 0.1) setOff(true);
-    alpha = lerp(alpha, desiredAlpha, 0.04f);
+    alpha = lerp(alpha, desiredAlpha, 0.05f);
     if (dissolve) {
       rot.add(aVel);
       pos.add(vel);
+      if (alpha < 0.1) {
+        setOff(true);
+      }
     }
 
     display();
   }
 
+  void easeChanges() {
+    color_ = lerpColor(color_, desiredColor, 0.1);
+    scale.lerp(desiredScale, 0.1f);
+  }
+
   void display() {
     noStroke();
-    fill(getColor(), alpha);
+    fill(color_, alpha);
 
     // Drawing tile
     pushMatrix();
     {
-      translate(pos.x - (scale.x / 2), pos.y - (scale.y / 2), pos.z - (scale.z / 2));
+      //translate(pos.x - (scale.x / 2), pos.y - (scale.y / 2), pos.z - (scale.z / 2));
+      translate(pos.x, pos.y, pos.z);
       rotateX(rot.x);
       rotateY(rot.y);
       rotateZ(rot.z);
-      beginShape(QUAD);
-      {
-        vertex(0, 0, 0);
-        vertex(scale.x, 0, 0);
-        vertex(scale.x, scale.y, 0);
-        vertex(0, scale.y, 0);
-
-        vertex(0, 0, scale.z);
-        vertex(scale.x, 0, scale.z);
-        vertex(scale.x, scale.y, scale.z);
-        vertex(0, scale.y, scale.z);
-
-        vertex(0, 0, 0);
-        vertex(0, 0, scale.z);
-        vertex(0, scale.y, scale.z);
-        vertex(0, scale.y, 0);
-
-        vertex(scale.x, 0, 0);
-        vertex(scale.x, 0, scale.z);
-        vertex(scale.x, scale.y, scale.z);
-        vertex(scale.x, scale.y, 0);
-
-        vertex(0, 0, 0);
-        vertex(0, 0, scale.z);
-        vertex(scale.x, 0, scale.z);
-        vertex(scale.x, 0, 0);
-
-        vertex(0, scale.y, 0);
-        vertex(0, scale.y, scale.z);
-        vertex(scale.x, scale.y, scale.z);
-        vertex(scale.x, scale.y, 0);
-      }
-      endShape();
+      scale(scale.x, scale.y, scale.z);
+      box(1);
     }
     popMatrix();
   }
 
   void scaleUp(float x, float y) {
     desiredScale.add(x, y, 0);
-    desiredScale.x = constrain(desiredScale.x, 0, initialTileBounds.x);
-    desiredScale.y = constrain(desiredScale.y, 0, initialTileBounds.y);
+    desiredScale.x = constrain(desiredScale.x, 0, initialTileScale.x);
+    desiredScale.y = constrain(desiredScale.y, 0, initialTileScale.y);
+    tileScale.x = constrain(tileScale.x + x, 0, initialTileScale.x);
+    tileScale.y = constrain(tileScale.y + y, 0, initialTileScale.y);
+    lightUp();
   }
 
   void setScale(PVector scale) {
@@ -103,9 +85,10 @@ class Tile {
 
   void setPos(float x, float y, float z) {
     this.pos = new PVector(x, y, z);
-  }
+  } 
 
   void dissolve() {
+    vel = PVector.sub(pos, topTile.pos).normalize().mult(0.5);
     desiredAlpha = 0;
     alpha = 255;
     dissolve = true;
@@ -117,6 +100,10 @@ class Tile {
 
   void setColor(int color_) {
     this.color_ = color_;
+  }
+
+  void lightUp() {
+    color_ = color(255);
   }
 
   boolean isOff() {

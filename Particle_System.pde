@@ -2,15 +2,15 @@ class ParticleSystem {
   ArrayList<Particle> particles = new ArrayList<Particle>();
 
   void run() {
-    if (random(1) < 0.05) {
-      particles.add(new Particle(
-        random(-width / 2, width / 2) - 400, 
-        random(-height / 2, height / 2) - 400, 
-        random(-200, 200) - cameraZ)
-        );
+    if (random(1) < 0.1) {
+      final float a = random(TWO_PI);
+      final float r =  random(height/1.38, height/0.93);
+      final float x = sin(a) *r;
+      final float y = cos(a) * r;
+      particles.add(new Particle(x, y, topTile.pos.z + random(-height/2)));
     }
     for (int i = particles.size() - 1; i >= 0; i--) {
-      Particle p = particles.get(i);
+      final Particle p = particles.get(i);
       if (p.off) particles.remove(i);
       else p.update();
     }
@@ -20,6 +20,7 @@ class ParticleSystem {
     PVector rot;
     PVector aVel;
     PVector pos;
+    PVector scale;
 
     boolean off;
 
@@ -36,6 +37,7 @@ class ParticleSystem {
       aVel = PVector.random3D().mult(0.01f);
       pos = new PVector(x, y, z);
       rot = PVector.random3D();
+      scale = new PVector(height/76.8, height/76.8, height/76.8);
     }
 
 
@@ -53,12 +55,13 @@ class ParticleSystem {
     void display() {
       pushMatrix();
       {
-        translate(pos.x, pos.y, pos.z);
         fill(color_, alpha);
+        translate(pos.x, pos.y, pos.z);
         rotateX(rot.x);
         rotateY(rot.y);
         rotateZ(rot.z);
-        box(10);
+        scale(scale.x, scale.y, scale.z);
+        box(1);
       }
       popMatrix();
     }
