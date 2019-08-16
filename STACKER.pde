@@ -85,6 +85,7 @@ public void setup() {
   newGame();
 }
 
+
 public void draw() {
   pushMatrix();
   ortho(-width / 2, width / 2, -height / 2, height / 2, -width, width);
