@@ -17,7 +17,7 @@ public void assignVariables() {
   bonusGain = height/40f;
   errorMargin = height/40f;
   maxScoreGain = 100;
-  particleSystem = new ParticleSystem();
+  particleSystem = new Cubie();
   rubbles = new ArrayList<Tile>();
   waves = new Waves();
   textAlign(CENTER);
@@ -57,7 +57,7 @@ private float time;
 private float oscillatingSpeed;
 private boolean isMovingOnX;
 
-private ParticleSystem particleSystem;
+private Cubie particleSystem;
 
 private final int  MINIMUM_COMBO = 5;
 private Score score;
@@ -76,8 +76,11 @@ private float playButtonAlpha;
 private float titleAlpha;
 
 
+PFont titleFont1;
+PFont titleFont2;
 public void setup() {
-  textFont(createFont("Lato Light", height/3.45));
+  titleFont2 = loadFont("Lato-Bold-48.vlw");
+  titleFont1 = loadFont("Lato-Hairline-120.vlw");
   assignVariables();
   newGame();
 }
@@ -136,6 +139,7 @@ private void updateUI() {
   textAlign(CENTER);
   if (!titleScreen) {
     fill(255 - red(desiredBgColor), 255 - green(desiredBgColor), 255 - blue(desiredBgColor));
+    textFont(titleFont2);
     if (gameStarted) {
       textSize(height/12.8);
       text(score.score, 0, -height / 3.5);
@@ -158,11 +162,11 @@ private void drawTitle() {
   titleAlpha = lerp(titleAlpha, titleScreen ? 255 : 0, 0.1);
   fill(255 - red(desiredBgColor), 255 - green(desiredBgColor), 255 - blue(desiredBgColor), titleAlpha);
   if (titleAlpha > 100) {
+    textFont(titleFont1);
     textAlign(LEFT, CENTER);
-    text("STACK", -width/2.3, 0);
-    textAlign(LEFT, BOTTOM);
-    textSize(height/20.7);
-    text("P R O C E S S I N G", -width/2.3, -height/16.1);
+    text("STACKER", -width/2.3, 0);
+    textSize(height/26f);
+    text("Inspired by KETCHAPP", -width/2.3f, -height/16.1 + height/5.5f);
   }
 }
 
@@ -243,7 +247,7 @@ public void keyPressed() {
       }
     }
   }
-  if(key == 'q'){
+  if (key == 'q') {
     saveFrame("frame" + frameCount + ".png");
     println("saved");
   }
