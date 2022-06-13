@@ -47,9 +47,9 @@ private PVector globalPosition;
 
 private final float FPS = 120;
 private final float DEF_FPS = 60;
-private final float ANIM_MOD = DEF_FPS/FPS; 
-private final float ANIM_AMT = 0.1f * ANIM_MOD;
-private final float DEF_OSCILLATING_SPEED = 0.03f * ANIM_MOD;
+private float ANIM_MOD = DEF_FPS/FPS; 
+private float ANIM_AMT = 0.1f * ANIM_MOD;
+private float DEF_OSCILLATING_SPEED = 0.03f * ANIM_MOD;
 
 private PVector initialTileScale = new PVector(height/2.2f, height/2.2f, height/14f);
 private PVector tileScale;
@@ -58,6 +58,7 @@ private Tile topTile;
 private float time;
 private float oscillatingSpeed;
 private boolean isMovingOnX;
+private boolean auto;
 
 private Cubie particleSystem;
 
@@ -76,13 +77,16 @@ private int desiredBgColor;
 private int bgColor;
 private float playButtonAlpha;
 private float titleAlpha;
+private float comboScore = 0;
 
 
 PFont titleFont1;
 PFont titleFont2;
 public void setup() {
   fullScreen(P3D);
-  smooth(4);
+  //size(640, 360, P3D);
+  //size(805, 483, P3D);
+  smooth(10);
   frameRate(FPS);
   titleFont2 = loadFont("Lato-Bold-48.vlw");
   titleFont1 = loadFont("Lato-Hairline-120.vlw");
@@ -90,13 +94,35 @@ public void setup() {
   newGame();
 }
 
+void adaptiveAnimAmt(){
+  ANIM_MOD = DEF_FPS/frameRate; 
+  ANIM_AMT = 0.1f * ANIM_MOD;
+  DEF_OSCILLATING_SPEED = 0.03f * ANIM_MOD;
+}
+
+public void auto(){
+  if (!auto) return;
+  if (isMovingOnX) {
+    final float deltaX = topTile.pos.x - oscillatingTile.pos.x;
+    if (abs(deltaX) < errorMargin) {
+      mousePressed();
+    }
+  }else{
+    final float deltaY = topTile.pos.y - oscillatingTile.pos.y;
+    if (abs(deltaY) < errorMargin) {
+      mousePressed();
+    }
+  }
+}
+
 
 public void draw() {
   pushMatrix();
-  ortho(-width / 2, width / 2, -height / 2, height / 2, -width, width);
+  ortho(-width / 2, width / 2, -height / 2, height / 2, -width, width*10);
   globalUpdate();
   popMatrix();
-  
+  adaptiveAnimAmt();
+  auto();
 }
 
 void globalUpdate() {
@@ -150,8 +176,19 @@ private void updateUI() {
     if (gameStarted) {
       textSize(height/12.8);
       text(score.score, 0, -height / 3.5);
+      if(comboScore > 0){
+        textSize(height/30);
+        text("+" + int(comboScore), 0, -height / 2.8);
+      }
       textSize(height/19.2);
       text(score.stack, 0, -height / 3.5 + height/12.8);
+      if (auto){
+        textSize(height/40);
+        fill(255);
+        rect(0, -height / 3.5 + height/7.3, width/25.2, height/32.7, 10);
+        fill(topTile.getColor());
+        text("auto", 0, -height / 3.5 + height/7);
+      }
     } else {
       textSize(height/12.8);
       text(score.highScore, 0, (height / 3.5));
@@ -174,6 +211,9 @@ private void drawTitle() {
     text("STACKER", -width/2.3, 0);
     textSize(height/26f);
     text("Inspired by KETCHAPP", -width/2.3f, -height/16.1 + height/5.5f);
+    textFont(titleFont2);
+    textSize(height/80f);
+    text("ARROWS & WHEEL observe tiles\nSPACE place tile\nA auto", -width/2.3f, -height/16.1 + height/3.5f);
   }
 }
 
@@ -212,6 +252,7 @@ public void mousePressed() {
 }
 
 public void keyPressed() {
+  if (key == 'a' || key == 'A') auto = !auto;
   if (key == ' ') {
     if (!titleScreen) {
       if (gameStarted) {
@@ -300,11 +341,11 @@ void startGame() {
 }
 
 void accelerate() {
-  oscillatingSpeed += 0.00018;
+  oscillatingSpeed = min(oscillatingSpeed + 0.00018, DEF_OSCILLATING_SPEED + 0.00018 * 250);
 }
 
 private void drawPlayButton(final float x, final float y, final float size) {
-  playButtonAlpha = lerp(playButtonAlpha, gameStarted ? 0 : titleScreen ? 0 : 255, 0.1f);
+  playButtonAlpha = lerp(playButtonAlpha, gameStarted ? 0 : titleScreen ? 0 : 255, ANIM_AMT);
   if (playButtonAlpha > 0.1) {
     // Centroid
     final float cx = 0.25f;
@@ -471,7 +512,12 @@ class Score {
 
   void add(float add) {
     stack++;
-    desiredScore += add;
+    if (combo > 0){
+      comboScore = combo * add;
+    }else {
+      comboScore = 0;
+    }
+    desiredScore += add + comboScore;
     highScore = score > highScore ? score : highScore;
     highStack = stack > highStack ? stack : highStack;
   }

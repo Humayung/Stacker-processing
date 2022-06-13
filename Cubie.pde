@@ -2,7 +2,7 @@ class Cubie {
   ArrayList<Cube> particles = new ArrayList<Cube>();
 
   void run() {
-    if (random(1) < 0.1) {
+    if (random(1) < 0.2) {
       final float a = random(TWO_PI);
       final float r =  random(height/1.38, height/0.93);
       final float x = sin(a) *r;
