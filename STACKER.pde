@@ -341,7 +341,7 @@ void startGame() {
 }
 
 void accelerate() {
-  oscillatingSpeed = min(oscillatingSpeed + 0.00018, DEF_OSCILLATING_SPEED + 0.00018 * 250);
+  oscillatingSpeed = min(oscillatingSpeed + 0.00018, DEF_OSCILLATING_SPEED + 0.00018 * 130);
 }
 
 private void drawPlayButton(final float x, final float y, final float size) {
