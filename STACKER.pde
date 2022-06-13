@@ -1,7 +1,7 @@
 public void assignVariables() {
   startColor = color(random(256), random(256), random(256));
   endColor = color(random(256), random(256), random(256));
-  oscillatingSpeed = .03f;
+  oscillatingSpeed = DEF_OSCILLATING_SPEED;
   playButtonAlpha = 0;
   titleAlpha = 255;
   desiredDistance = 1;
@@ -23,10 +23,6 @@ public void assignVariables() {
   textAlign(CENTER);
 }
 
-public void settings() {
-  //fullScreen(P3D);
-  size(805, 483, P3D);
-}
 
 private ArrayList<Tile> tiles;
 private ArrayList<Tile> displayTiles;
@@ -48,6 +44,12 @@ private PVector desiredGlobalRotation;
 private PVector globalRotation;
 private PVector desiredGlobalPosition;
 private PVector globalPosition;
+
+private final float FPS = 120;
+private final float DEF_FPS = 60;
+private final float ANIM_MOD = DEF_FPS/FPS; 
+private final float ANIM_AMT = 0.1f * ANIM_MOD;
+private final float DEF_OSCILLATING_SPEED = 0.03f * ANIM_MOD;
 
 private PVector initialTileScale = new PVector(height/2.2f, height/2.2f, height/14f);
 private PVector tileScale;
@@ -79,6 +81,9 @@ private float titleAlpha;
 PFont titleFont1;
 PFont titleFont2;
 public void setup() {
+  fullScreen(P3D);
+  smooth(4);
+  frameRate(FPS);
   titleFont2 = loadFont("Lato-Bold-48.vlw");
   titleFont1 = loadFont("Lato-Hairline-120.vlw");
   assignVariables();
@@ -91,6 +96,7 @@ public void draw() {
   ortho(-width / 2, width / 2, -height / 2, height / 2, -width, width);
   globalUpdate();
   popMatrix();
+  
 }
 
 void globalUpdate() {
@@ -124,11 +130,11 @@ void globalUpdate() {
 }
 
 void easeMotion() {
-  globalPosition.lerp(desiredGlobalPosition, 0.1f);
-  globalRotation.lerp(desiredGlobalRotation, 0.1f);
-  distance = lerp(distance, desiredDistance, 0.1f);
-  bgColor = lerpColor(bgColor, desiredBgColor, 0.1f);
-  cameraPos.lerp(desiredCameraPos, 0.1);
+  globalPosition.lerp(desiredGlobalPosition, ANIM_AMT);
+  globalRotation.lerp(desiredGlobalRotation, ANIM_AMT);
+  distance = lerp(distance, desiredDistance, ANIM_AMT);
+  bgColor = lerpColor(bgColor, desiredBgColor, ANIM_AMT);
+  cameraPos.lerp(desiredCameraPos, ANIM_AMT);
   score.ease();
 }
 
@@ -189,7 +195,7 @@ private void newGame() {
   oscillatingTile = new Tile(new PVector(0, 0, tileScale.z), tileScale, getNextColor());
   displayTiles.add(oscillatingTile);
   tiles.add(oscillatingTile);
-  oscillatingSpeed = 0.03f;
+  oscillatingSpeed = DEF_OSCILLATING_SPEED;
   gameOver = false;
   gameStarted = false;
   desiredDistance = 1;
@@ -255,8 +261,9 @@ public void keyPressed() {
 }
 
 public void mouseWheel(MouseEvent e) {
+  float amt = e.getCount() / abs(e.getCount());
   if (gameOver) {
-    desiredDistance = constrain(desiredDistance + e.getAmount()*0.1, getCoverageDistance(), getFocusDistance());
+    desiredDistance = constrain(desiredDistance + amt *0.1, getCoverageDistance(), getFocusDistance());
   }
 }
 
