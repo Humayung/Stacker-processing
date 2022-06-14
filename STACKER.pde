@@ -1,3 +1,6 @@
+import processing.sound.*;
+SoundFile[] sfxs = new SoundFile[4];
+
 public void assignVariables() {
   startColor = color(random(256), random(256), random(256));
   endColor = color(random(256), random(256), random(256));
@@ -90,8 +93,17 @@ public void setup() {
   frameRate(FPS);
   titleFont2 = loadFont("Lato-Bold-48.vlw");
   titleFont1 = loadFont("Lato-Hairline-120.vlw");
+  for (int i = 0; i < sfxs.length; i++){
+    sfxs[i] = new SoundFile(this, "pluck" + (i+1) + ".mp3");
+  }
   assignVariables();
   newGame();
+}
+
+void playSfx(){
+  int i = ceil(random(0, 4)) - 1;
+  SoundFile sfx = sfxs[i];
+  sfx.play();
 }
 
 void adaptiveAnimAmt(){
@@ -465,6 +477,7 @@ private boolean placeTile() {
     }
   }
   spawnTile();
+  playSfx();
   return true;
 }
 
